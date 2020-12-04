@@ -1,0 +1,254 @@
+#include<stdio.h>
+#include<stdbool.h>
+#include<math.h>
+
+int main (){
+FILE *chaves;
+
+void codificar ( char palavra[] , int chavePu2 , int chavePu1 );
+void descodificar (  int chave_descodificadora , int chavePu2  );
+int inverso (int a ,int b);
+
+int p  , q  , chave_descodificadora;
+int chavePu1 , totiente , chavePu2 , acao;
+char palavra[10000];
+// chavePu2 = e ,  chavPu1 = n
+
+
+printf("Digte 1 ,2 ,3 \n");
+scanf("%d",&acao);
+
+
+if (acao == 1)
+{
+    
+
+printf("Digite a chave privada P: \n");
+scanf("%d",&p);
+
+printf("Digite a chave privada q: \n");
+scanf("%d",&q);
+
+printf("Digite a chave publica 2(e): \n");
+scanf("%d",&chavePu2);
+
+chavePu1 = p*q;
+chaves = fopen("chaves_Publicas.txt", "w");
+fprintf(chaves , "chave Publica 1 = %d ",chavePu1);
+fprintf(chaves , "\nchave Publica 2(e) = %d",chavePu2);
+fclose(chaves);
+}
+
+
+
+
+
+else if (acao ==2)
+{
+
+
+printf("Digite a mensagem a ser Encriptada: ");
+scanf("%s",palavra);
+
+printf("Digite a 1° chave publica: \n");
+scanf("%d",&chavePu1);
+printf("Digite a 2° chave publica: \n");
+scanf("%d",&chavePu2);
+codificar ( palavra , chavePu2 , chavePu1 );
+}
+
+else if (acao == 3)
+{
+printf("Digite P : \n");
+scanf("%d",&p);
+printf("Digite Q : \n");
+scanf("%d",&q);
+printf("Digite a 2° chave publica: \n");
+scanf("%d",&chavePu2);
+chavePu1 = p*q;
+totiente = (p -1)*(q-1);
+chave_descodificadora = inverso(chavePu2 ,totiente);
+descodificar (  chave_descodificadora , chavePu1 ) ;
+
+}
+
+
+
+return 0;
+
+}
+
+int inverso (int a ,int b){
+int modulo = b ,resultado =1,aux = 0 ;
+int resto ,contador = 0,quociente[1000] ,antes;
+
+// MDC
+do
+{
+    resto = a%b;
+    if (resto != 0)
+    {
+        quociente[contador]= a/b;
+        contador++ ;
+    }
+    a = b;
+    b=resto;
+
+} while (resto != 0);
+
+//Algoritmo de Euclides
+
+
+contador--;
+
+while (contador > 0)
+{
+    antes = resultado;
+    resultado = (quociente[contador] * resultado) + aux;
+    aux = antes;
+    contador--;
+}
+// colocar o sinal do inverso 
+if(contador %2 == 0 ) 
+{
+    resultado*= -1  ;
+}
+/* caso resultado seja negativo vai torna positivo e no intervalo entre 1 e (M - 1)
+ou caso o resultado seja maior que modulo deixalo entre o intevalo no entre 1 e (M - 1)
+*/
+if(resultado < 0 || resultado < modulo )
+{
+    resultado = (resultado + modulo ) % modulo;
+}
+
+    return resultado;
+}
+
+
+void codificar ( char palavras[] , int chavePu2 , int chavePu1 ){
+FILE *Encriptar ;
+int   numero_de_letra ,expoente = 2,numero_de_fatoracao = 0,fatorado[10000];
+long long int resultado = 0 ;
+
+Encriptar= fopen("Encriptar.txt","w");
+
+// fatorar em multiplos de 2 a chave publica 2 , o expoentre de 2 começa apartir de 2
+while (resultado != chavePu2){
+
+   if ((resultado + pow(2,expoente)) <= chavePu2)
+	{
+		fatorado[numero_de_fatoracao]= pow(2,expoente);
+		resultado +=  pow(2,expoente);
+		numero_de_fatoracao++;
+	}
+	else
+	{
+		expoente --;
+	}
+}
+resultado = 1;
+
+// encriptação
+for (numero_de_letra = 0; palavras[numero_de_letra] != '\0' ; numero_de_letra++)
+{
+
+    for (int contador = 0; contador < numero_de_fatoracao; contador++)
+    {
+        resultado *=  pow(palavras[numero_de_letra],fatorado[contador]);
+        resultado = resultado % chavePu1;
+    }
+
+    fprintf(Encriptar , "%lld " ,resultado % chavePu1);
+
+    resultado = 1;
+}
+
+fclose(Encriptar);
+
+//retun a quantidade de letras obs tira na versao final e transforma a função em void
+return  ;
+
+}
+
+void descodificar (  int chave_descodificadora , int chavePu1 ){
+char p ,caracteri;
+long int expoente =1,numero_de_fatoracao =0 ;
+long long int resultado =0,fatorado[10000];
+int letra[10000],numero_de_letra = 0 , cont;
+FILE *Desencriptar;
+
+Desencriptar = fopen("Encriptar.txt","a");
+fprintf(Desencriptar, "%c", '\n');
+
+fclose(Desencriptar);
+
+Desencriptar = fopen("Encriptar.txt","r");
+
+
+do
+{
+    fscanf(Desencriptar , "%c", &caracteri );
+  cont ++;
+    
+
+}while (caracteri != '\n');
+fclose(Desencriptar);
+Desencriptar = fopen("Encriptar.txt","r");
+
+while (numero_de_letra < cont)
+{
+    
+    fscanf(Desencriptar , "%d", &letra[numero_de_letra]);
+      
+    numero_de_letra++ ;
+    
+}
+
+
+
+fclose(Desencriptar);
+
+
+Desencriptar = fopen("Desencriptar.txt","w");
+
+
+while (resultado != chave_descodificadora){
+
+    if ((resultado + pow(2,expoente)) <= chave_descodificadora)
+	{
+		fatorado[numero_de_fatoracao]= pow(2,expoente);
+		resultado +=  pow(2,expoente);
+		numero_de_fatoracao++;
+         
+	}
+	else
+	{
+		expoente --;
+	}
+}
+resultado = 1;
+
+
+for (int j = 0; j < numero_de_letra ; j++)
+{
+for ( int contador = 0; contador < numero_de_fatoracao; contador++)
+{
+
+
+resultado *=  pow(letra[j],fatorado[contador]);
+resultado = resultado % chavePu1;
+ 
+}
+letra[j] = resultado;
+
+resultado = 1;
+fprintf(Desencriptar , "%c" ,letra[j] );
+
+
+}
+fclose(Desencriptar);
+
+
+return ;
+
+}
