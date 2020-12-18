@@ -1,0 +1,187 @@
+from math import ceil , floor
+
+def check(value):
+    '''
+    Tem a função de verificar se as entradas do usúario são permitidas.
+    '''
+    lista = []
+    inicio = 0
+    fim = 1000000
+    for i in range(inicio,fim + 1):
+        lista.append(str(i))
+    while (value not in lista):
+            value = input("(Erro) Tente novamente. Digite um valor: ")
+    value = int(value)
+    return value
+    
+
+def inverso ( num_1 , num_2):
+    '''
+    Tem a Função para gerar o inverso de A modulo M que esteja entre  0 e modulo M ,
+    sendo a variavel  num_1 o dividendo(A)  e a variavel  num_2 o modulo(M).
+    '''
+
+    modulo = num_2
+    resultado =1
+    aux = 0 
+    contador = 0
+    quociente =[]
+    resto = 1
+
+    while (resto != 0):
+        resto = num_1%num_2
+        if (resto != 0):
+            quociente.append(floor(num_1/num_2))
+            contador = contador + 1
+        num_1 = num_2
+        num_2=resto
+    sinal = contador
+    contador = contador - 1 
+    
+    while (contador > 0):
+        antes = resultado
+        resultado = (quociente[contador] * resultado) + aux
+        aux = antes
+        contador = contador - 1 
+
+    if(sinal %2 == 0):
+        resultado = resultado * (-1)  
+
+    if((resultado < 0) or (resultado > modulo) ):
+        resultado = (resultado + modulo ) % modulo
+    
+    return resultado
+
+
+def chaves():
+    '''
+    Tem a função de receber as chaves privadas (p e q) e pública (e) do usuário
+    '''
+    print("\n-------------- GERAR CHAVES PÚBLICAS --------------\n")
+    chaves = open("chaves_publicas.txt" , "w")
+    
+    p= input("Digite a chave privada P: ")
+    p = check(p)
+    q= input("Digite a chave privada q: ")
+    q = check(q)
+    chaves.write("chave Publica 1: " + str(p*q) + "\n")
+
+    chavePU2= input("Digite a chave publica 2(e): ")
+    chavePU2 = check(chavePU2)
+    
+    chaves.write("chave Publica 2: " + str(chavePU2) + "\n")
+    chaves.close()
+    print("Chaves públicas criadas com sucesso!")
+    
+
+
+def encriptar():
+    '''
+    Tem a função de receber um texto e as chaves públicas do usuário.
+    Cria um arquivo .txt com uma mensagem encriptada.
+    '''
+    print("\n------------- ENCRIPTAR -------------\n")
+    palavra = input("Digite o texto a ser encriptado: ")
+    
+    chavePU1 = input("Digite a 1° chave publica: ")
+    chavePU1 = check(chavePU1)
+    
+    chavePU2 = input("Digite a 2° chave publica: ")
+    chavePU2 = check(chavePU2)
+    
+    encriptado = open("criptografia.txt","w")
+    for letra in  palavra:
+        if letra == ' ':
+            letra = pow(ord(letra) - 4 , chavePU2) % chavePU1 
+        else:
+            letra = pow(ord(letra) - 63 , chavePU2) % chavePU1 
+       
+        encriptado.write(f"{int(letra)}")
+        encriptado.write(" ")
+    encriptado.close()
+    print("Arquivo encriptado com sucesso!")
+
+
+def decriptar():
+    '''
+    Tem a função de receber as chaves privadas e a chave pública (e) do usuário e
+    a patir dessas chaves ira gerar uma chave privada para decriptar a mensagem.
+    Acessa um arquivo .txt existente.
+    Cria um arquivo .txt com uma mensagem decriptada.
+    '''
+    print("\n-------------- DECRIPTAR --------------\n")
+    p= input("Digite a chave privada P: ")
+    p = check(p)
+
+    q= input("Digite a chave privada q: ")
+    q = check(q)
+    
+    chavePU2= input("Digite a chave publica 2(e): ")
+    chavePU2 = check(chavePU2)
+
+    chavePU1 = p * q
+    totiente = (p -1)*(q-1)
+    
+    chave_descodificadora = inverso( chavePU2,totiente)
+    encript = open("criptografia.txt","r")
+    decript = open("decriptado.txt","w")
+   
+    for palavra in encript:
+        palavra = palavra.split()
+        for letra in palavra:
+            letra =  (int(letra) ** int(chave_descodificadora)) % chavePU1 
+            if (letra == 28):
+                decript.write(f"{chr(letra + 4)}")
+            else:
+                decript.write(f"{chr(letra + 63)}")
+    encript.close()
+    decript.close()
+    print("Arquivo decriptado com sucesso!")
+
+def info():
+    '''
+    Função extra, apenas para mostrar informações.
+    '''
+    print("\n-------------- INFORMAÇÕES --------------\n"+
+    "1. Sempre que você gerar uma nova chave pública, ela será atualizada automaticamente. O arquivo se chamará \n" 
+    "   'chaves_publicas.txt'\n"
+    "\n2- Quando encriptar alguma mensagem, o arquivo se chamará 'criptografia.txt'\n"
+    "\n3- Quando decriptar alguma sequência, o arquivo se chamará 'decriptado.txt'\n"
+    "\n4- Obs: Este programa seria funcional para todos os valores. Porém, decidimos restringir o funcionamento com chaves\n"
+    "   públicas até 1.000.000 (1mi) \n") #para alterar isso, apenas modifique a linha 6
+    
+    key = input("Digite algum caractere para retornar ao menu principal: ")
+    return
+
+def main():
+    '''
+    Menu principal.
+    '''
+    print("   ____          _           _                                     __   _             ____    ____       _    ")
+    print("  / ___|  _ __  (_)  _ __   | |_    ___     __ _   _ __    __ _   / _| (_)   __ _    |  _ \  / ___|     / \   ")
+    print(" | |     | '__| | | | '_ \  | __|  / _ \   / _` | | '__|  / _` | | |_  | |  / _` |   | |_) | \___ \    / _ \  ")
+    print(" | |___  | |    | | | |_) | | |_  | (_) | | (_| | | |    | (_| | |  _| | | | (_| |   |  _ <   ___) |  / ___ \ ")
+    print("  \____| |_|    |_| | .__/   \__|  \___/   \__, | |_|     \__,_| |_|   |_|  \__,_|   |_| \_\ |____/  /_/   \_\ ")
+    print("                    |_|                    |___/                                                              ")
+    lista = ["0","1","2","3","4"]
+    while True:
+        print("\nEscolha uma das opções abaixo:\n[1]- Adicionar chaves públicas                   [4]- Informações (Recomendado)\n"+
+                                            "[2]- Encriptar um texto                          [0]- Sair\n"+
+                                            "[3]- Decriptar uma sequência\n")
+        comando = input("Digite aqui a opção desejada: ")
+        while (comando not in lista):
+            comando = input("(Erro) Opção inválida. Tente novamente: ")
+
+
+        if (comando == "1" ):
+            chaves()
+        elif (comando == "2"):
+            encriptar()
+        elif (comando == "3"):
+            decriptar()
+        elif (comando =="4"):
+            info()
+        elif (comando =="0"):
+            break
+
+main()
